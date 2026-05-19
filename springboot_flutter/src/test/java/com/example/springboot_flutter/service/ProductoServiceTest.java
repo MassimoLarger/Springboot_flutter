@@ -175,9 +175,8 @@ class ProductoServiceTest {
     void actualizar_WhenProductExists_ShouldUpdateProduct() {
         // Arrange
         when(productoRepository.findById(1L)).thenReturn(Optional.of(producto));
-        when(productoRepository.existsByNombreIgnoreCase(requestDTO.getNombre())).thenReturn(false);
         when(productoRepository.save(any(Producto.class))).thenReturn(producto);
-        when(productoMapper.entityToResponseDto(producto)).thenReturn(responseDTO);
+        when(productoMapper.entityToResponseDto(any(Producto.class))).thenReturn(responseDTO);
 
         // Act
         ProductoResponseDTO result = productoService.actualizar(1L, requestDTO);

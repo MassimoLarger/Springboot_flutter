@@ -35,8 +35,7 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }
@@ -55,22 +54,11 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(authz -> authz
-                        .requestMatchers(
-                            ("/admin/**").hasRole("ADMIN"),
-                            "/auth/**",
-                            "/auth/login",
-                            "/auth/register",
-                            "/auth/refresh",
-                            "/auth/health",
-                            "/actuator/health",
-                            "/swagger-ui/**",
-                            "/v3/api-docs/**",
-                            "/swagger-ui.html"
-                        ).permitAll()
-                        .requestMatchers(HttpMethod.GET, "/productos/**").permitAll()
-                        .anyRequest().authenticated()
-                )
+                        .authorizeHttpRequests(authz -> authz
+                                .requestMatchers("/auth/**", "/admin/**", "/actuator/health", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/productos/**").permitAll()
+                                .anyRequest().authenticated()
+                        )
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )

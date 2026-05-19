@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Slf4j
@@ -37,22 +36,27 @@ public class RefreshTokenService {
      * @return RefreshToken creado
      */
     public RefreshToken createRefreshToken(Usuario usuario) {
-        // Eliminar refresh token anterior si existe
-        refreshTokenRepository.findByUsuario(usuario)
-                .ifPresent(refreshTokenRepository::delete);
-
-        // Crear nuevo refresh token
-        RefreshToken refreshToken = RefreshToken.builder()
-                .token(UUID.randomUUID().toString())
-                .usuario(usuario)
-                .expiryDate(Instant.now().plusMillis(refreshTokenDurationMs))
-                .revoked(false)
-                .build();
-
-        refreshToken = refreshTokenRepository.save(refreshToken);
-        log.info("Refresh token creado para usuario: {}", usuario.getEmail());
-
-        return refreshToken;
+        log.info("Creando/Actualizando refresh token para usuario ID: {}", usuario.getId());
+        
+        // Buscar por ID de usuario para evitar problemas de persistencia
+        return refreshTokenRepository.findByUsuarioId(usuario.getId())
+                .map(existingToken -> {
+                    log.info("Token existente encontrado (ID: {}), actualizando...", existingToken.getId());
+                    existingToken.setToken(UUID.randomUUID().toString());
+                    existingToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
+                    existingToken.setRevoked(false);
+                    return refreshTokenRepository.save(existingToken);
+                })
+                .orElseGet(() -> {
+                    log.info("No se encontró token previo, creando uno nuevo.");
+                    RefreshToken newToken = RefreshToken.builder()
+                            .token(UUID.randomUUID().toString())
+                            .usuario(usuario)
+                            .expiryDate(Instant.now().plusMillis(refreshTokenDurationMs))
+                            .revoked(false)
+                            .build();
+                    return refreshTokenRepository.save(newToken);
+                });
     }
 
     /**
@@ -95,18 +99,14 @@ public class RefreshTokenService {
         // Generar nuevos tokens
         String newAccessToken = jwtProvider.generateTokenFromEmail(usuario.getEmail(), usuario.getId());
         
-        // Opcional: Rotación de refresh token (crear nuevo y revocar el anterior)
-        RefreshToken newRefreshToken = createRefreshToken(usuario);
+        // Rotación de refresh token: actualizamos el existente
+        RefreshToken rotatedToken = createRefreshToken(usuario);
         
-        // Revocar el refresh token usado
-        refreshToken.setRevoked(true);
-        refreshTokenRepository.save(refreshToken);
-
         log.info("Access token renovado exitosamente para usuario: {}", usuario.getEmail());
 
         return TokenRefreshResponse.builder()
                 .accessToken(newAccessToken)
-                .refreshToken(newRefreshToken.getToken())
+                .refreshToken(rotatedToken.getToken())
                 .type("Bearer")
                 .expiresIn(jwtProvider.getExpirationSeconds())
                 .message("Token renovado exitosamente")

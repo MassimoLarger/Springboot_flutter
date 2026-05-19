@@ -1,10 +1,7 @@
 package com.example.springboot_flutter.repository;
 
-import com.example.springboot_flutter.model.Producto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
 
 /**
  * ProductoRepositoryTest - Tests para ProductoRepository
@@ -15,9 +12,6 @@ import java.math.BigDecimal;
  * Pendiente: Implementar tests completos cuando las dependencias estén disponibles.
  */
 class ProductoRepositoryTest {
-
-    private Producto producto1;
-    private Producto producto2;
 
     @BeforeEach
     void setUp() {

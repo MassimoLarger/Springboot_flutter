@@ -195,6 +195,26 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Maneja CredencialesInvalidasException (401 UNAUTHORIZED)
+     */
+    @ExceptionHandler(CredencialesInvalidasException.class)
+    public ResponseEntity<ErrorResponse> handleCredencialesInvalidasException(
+            CredencialesInvalidasException ex,
+            WebRequest request
+    ) {
+        log.warn("CredencialesInvalidasException: {}", ex.getMessage());
+
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .message(ex.getMessage())
+                .timestamp(LocalDateTime.now())
+                .path(request.getDescription(false).replace("uri=", ""))
+                .build();
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(errorResponse);
+    }
+
+    /**
      * Maneja cualquier otra excepción no prevista (500 INTERNAL SERVER ERROR)
      * Es el manejador de último recurso para evitar que excepciones inesperadas
      * rompan el flujo normal de la API
@@ -206,9 +226,15 @@ public class GlobalExceptionHandler {
     ) {
         log.error("Exception no manejada: ", ex);
 
+        // Durante desarrollo, incluir el mensaje de la excepción para facilitar depuración
+        String mensaje = "Error interno del servidor: " + ex.getMessage();
+        if (ex.getCause() != null) {
+            mensaje += " | Causa: " + ex.getCause().getMessage();
+        }
+
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .message("Error interno del servidor. Por favor, intente más tarde.")
+                .message(mensaje)
                 .timestamp(LocalDateTime.now())
                 .path(request.getDescription(false).replace("uri=", ""))
                 .build();

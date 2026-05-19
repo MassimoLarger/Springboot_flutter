@@ -1,13 +1,7 @@
 package com.example.springboot_flutter.controller;
 
-import com.example.springboot_flutter.dto.ProductoRequestDTO;
-import com.example.springboot_flutter.dto.ProductoResponseDTO;
-import com.example.springboot_flutter.service.ProductoService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 /**
  * ProductoControllerTest - Tests para ProductoController
@@ -18,10 +12,6 @@ import java.time.LocalDateTime;
  * Pendiente: Implementar tests completos cuando las dependencias estén disponibles.
  */
 class ProductoControllerTest {
-
-    private ProductoService productoService;
-    private ProductoResponseDTO responseDTO;
-    private ProductoRequestDTO requestDTO;
 
     @BeforeEach
     void setUp() {

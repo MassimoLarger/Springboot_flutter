@@ -1,7 +1,13 @@
 package com.example.springboot_flutter.security;
 
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.MalformedJwtException;
+import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -51,7 +57,7 @@ public class JwtProvider {
                 .claim("email", email)
                 .issuedAt(now)
                 .expiration(expiryDate)
-                .signWith(key, SignatureAlgorithm.HS512)
+                .signWith(key)
                 .compact();
     }
 
@@ -107,10 +113,20 @@ public class JwtProvider {
                     .parseSignedClaims(token);
 
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
-            log.error("Token JWT inválido: {}", e.getMessage());
-            return false;
+        } catch (SignatureException e) {
+            log.error("Firma JWT inválida: {}", e.getMessage());
+        } catch (MalformedJwtException e) {
+            log.error("Token JWT malformado: {}", e.getMessage());
+        } catch (ExpiredJwtException e) {
+            log.error("Token JWT expirado: {}", e.getMessage());
+        } catch (UnsupportedJwtException e) {
+            log.error("Token JWT no soportado: {}", e.getMessage());
+        } catch (IllegalArgumentException e) {
+            log.error("JWT claims string está vacía: {}", e.getMessage());
+        } catch (JwtException e) {
+            log.error("Error en validación JWT: {}", e.getMessage());
         }
+        return false;
     }
 
     /**
@@ -132,7 +148,7 @@ public class JwtProvider {
             return claims.getExpiration().before(new Date());
         } catch (ExpiredJwtException e) {
             return true;
-        } catch (JwtException | IllegalArgumentException e) {
+        } catch (Exception e) {
             return false;
         }
     }
