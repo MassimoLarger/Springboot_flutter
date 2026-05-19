@@ -1,0 +1,265 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_client/data/providers/producto_provider.dart';
+import 'package:flutter_client/models/producto.dart';
+import 'package:flutter_client/widgets/loading_widget.dart';
+import 'package:go_router/go_router.dart';
+
+class ProductoFormScreen extends ConsumerStatefulWidget {
+  final int? productoId;
+
+  const ProductoFormScreen({super.key, this.productoId});
+
+  @override
+  ConsumerState<ProductoFormScreen> createState() => _ProductoFormScreenState();
+}
+
+class _ProductoFormScreenState extends ConsumerState<ProductoFormScreen> {
+  final _formKey = GlobalKey<FormState>();
+  final _nombreController = TextEditingController();
+  final _descripcionController = TextEditingController();
+  final _precioController = TextEditingController();
+  final _stockController = TextEditingController();
+  
+  bool _isLoading = false;
+  Producto? _productoExistente;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.productoId != null) {
+      _cargarProducto();
+    }
+  }
+
+  Future<void> _cargarProducto() async {
+    setState(() => _isLoading = true);
+    
+    try {
+      final repository = ref.read(productoRepositoryProvider);
+      final producto = await repository.getProducto(widget.productoId!);
+      
+      _productoExistente = producto;
+      _nombreController.text = producto.nombre;
+      _descripcionController.text = producto.descripcion ?? '';
+      _precioController.text = producto.precio.toString();
+      _stockController.text = producto.stock.toString();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
+  }
+
+  Future<void> _guardar() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+      
+      try {
+        final notifier = ref.read(productosProvider.notifier);
+        final nombre = _nombreController.text.trim();
+        final descripcion = _descripcionController.text.trim();
+        final precio = double.parse(_precioController.text);
+        final stock = int.parse(_stockController.text);
+        
+        if (widget.productoId == null) {
+          await notifier.createProducto(
+            nombre: nombre,
+            descripcion: descripcion.isEmpty ? null : descripcion,
+            precio: precio,
+            stock: stock,
+          );
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Producto creado exitosamente')),
+            );
+          }
+        } else {
+          await notifier.updateProducto(
+            id: widget.productoId!,
+            nombre: nombre,
+            descripcion: descripcion.isEmpty ? null : descripcion,
+            precio: precio,
+            stock: stock,
+          );
+          
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Producto actualizado exitosamente')),
+            );
+          }
+        }
+        
+        if (mounted) {
+          context.pop(); // Volver a la pantalla anterior
+        }
+      } catch (e) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Error: $e')),
+          );
+        }
+      } finally {
+        if (mounted) {
+          setState(() => _isLoading = false);
+        }
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _nombreController.dispose();
+    _descripcionController.dispose();
+    _precioController.dispose();
+    _stockController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final titulo = widget.productoId == null ? 'Nuevo Producto' : 'Editar Producto';
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(titulo),
+        // ✅ Botón de retroceso automático (flecha izquierda)
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.pop(); // Volver sin guardar
+          },
+          tooltip: 'Volver',
+        ),
+        actions: [
+          // ✅ Botón de cancelar en la parte derecha
+          TextButton(
+            onPressed: () {
+              context.pop(); // Volver sin guardar
+            },
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? const LoadingWidget()
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(16),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _nombreController,
+                      decoration: const InputDecoration(
+                        labelText: 'Nombre del producto',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.production_quantity_limits),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'El nombre es requerido';
+                        }
+                        if (value.length < 3) {
+                          return 'El nombre debe tener al menos 3 caracteres';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    TextFormField(
+                      controller: _descripcionController,
+                      decoration: const InputDecoration(
+                        labelText: 'Descripción (opcional)',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.description),
+                      ),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    TextFormField(
+                      controller: _precioController,
+                      decoration: const InputDecoration(
+                        labelText: 'Precio',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.attach_money),
+                      ),
+                      keyboardType: TextInputType.numberWithOptions(decimal: true),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'El precio es requerido';
+                        }
+                        final precio = double.tryParse(value);
+                        if (precio == null || precio <= 0) {
+                          return 'El precio debe ser mayor a 0';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    TextFormField(
+                      controller: _stockController,
+                      decoration: const InputDecoration(
+                        labelText: 'Stock',
+                        border: OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.inventory),
+                      ),
+                      keyboardType: TextInputType.number,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'El stock es requerido';
+                        }
+                        final stock = int.tryParse(value);
+                        if (stock == null || stock < 0) {
+                          return 'El stock no puede ser negativo';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 32),
+                    
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              context.pop(); // Cancelar
+                            },
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            child: const Text('Cancelar'),
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton(
+                            onPressed: _guardar,
+                            style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                            ),
+                            child: Text(widget.productoId == null ? 'Crear' : 'Actualizar'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+    );
+  }
+}
