@@ -226,15 +226,9 @@ public class GlobalExceptionHandler {
     ) {
         log.error("Exception no manejada: ", ex);
 
-        // Durante desarrollo, incluir el mensaje de la excepción para facilitar depuración
-        String mensaje = "Error interno del servidor: " + ex.getMessage();
-        if (ex.getCause() != null) {
-            mensaje += " | Causa: " + ex.getCause().getMessage();
-        }
-
         ErrorResponse errorResponse = ErrorResponse.builder()
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .message(mensaje)
+                .message("Error interno del servidor. Por favor, intente más tarde.")
                 .timestamp(LocalDateTime.now())
                 .path(request.getDescription(false).replace("uri=", ""))
                 .build();
