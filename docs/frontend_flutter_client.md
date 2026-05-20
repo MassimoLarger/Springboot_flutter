@@ -19,7 +19,7 @@ Implementación:
   - Windows: `windows/`
   - (También incluye `macos/` y `linux/` por scaffold estándar)
 
-Dependencias instaladas (según [pubspec.yaml](file:///c:/Users/demon/Desktop/Practica/flutter/flutter_client/pubspec.yaml)):
+Dependencias instaladas (según [pubspec.yaml](flutter/flutter_client/pubspec.yaml)):
 - `dio`: cliente HTTP para consumo de API.
 - `flutter_riverpod`: gestión de estado.
 - `flutter_secure_storage`: persistencia segura de credenciales/tokens (se usa en lugar de `shared_preferences`).
