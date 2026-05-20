@@ -12,7 +12,12 @@ class AppRoutes {
   static final router = GoRouter(
     initialLocation: '/splash',
     redirect: (context, state) async {
-      final container = ProviderScope.containerOf(context);
+      ProviderContainer container;
+      try {
+        container = ProviderScope.containerOf(context);
+      } catch (_) {
+        return null;
+      }
       
       // Esperar un momento para que se cargue el estado
       await Future.delayed(const Duration(milliseconds: 100));

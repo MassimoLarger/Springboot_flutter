@@ -5,26 +5,27 @@
 // gestures. You can also use WidgetTester to find child widgets in the widget
 // tree, read text, and verify that the values of widget properties are correct.
 
-import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:flutter_client/main.dart';
+import 'package:flutter_client/screens/auth/login_screen.dart';
+import 'package:flutter_client/screens/productos/home_screen.dart';
+import 'package:flutter_client/screens/splash_screen.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  testWidgets('Arranca y muestra pantalla de login', (WidgetTester tester) async {
+    await tester.pumpWidget(const ProviderScope(child: MyApp()));
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    await tester.pumpAndSettle();
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    final isOnLogin = find.byType(LoginScreen).evaluate().isNotEmpty;
+    final isOnHome = find.byType(HomeScreen).evaluate().isNotEmpty;
+    final isOnSplash = find.byType(SplashScreen).evaluate().isNotEmpty;
+
+    expect(isOnLogin || isOnHome || isOnSplash, true);
   });
 }

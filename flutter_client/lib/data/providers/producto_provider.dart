@@ -54,6 +54,7 @@ class ProductosNotifier extends StateNotifier<ProductosState> {
   ProductosNotifier(this._productoRepository) : super(ProductosState());
 
   Future<void> loadProductos({bool refresh = false}) async {
+    // Usar microtask para evitar errores de actualización durante la construcción del widget
     await Future.microtask(() {});
 
     if (refresh) {
@@ -115,17 +116,17 @@ class ProductosNotifier extends StateNotifier<ProductosState> {
 
   Future<void> buscarProductos(String nombre) async {
     if (nombre.isEmpty) {
-      await loadProductos(refresh: true);
+      loadProductos(refresh: true);
       return;
     }
 
-    state = state.copyWith(isLoading: true, productos: [], currentPage: 0, error: null);
+    state = state.copyWith(isLoading: true, productos: [], currentPage: 0);
 
     try {
       final result = await _productoRepository.buscarProductos(
         nombre: nombre,
         page: 0,
-        size: 20,
+        size: 20, // Más grande para búsquedas
       );
 
       state = state.copyWith(

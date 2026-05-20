@@ -16,7 +16,7 @@ class ProductoCard extends StatelessWidget {
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(
         onTap: () {
-          context.go('/producto/${producto.id}');
+          context.push('/producto/${producto.id}');
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(

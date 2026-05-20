@@ -33,12 +33,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         _passwordController.text,
       );
       
+      if (!mounted) return;
       final authState = ref.read(authStateProvider);
-      if (authState.isAuthenticated && mounted) {
-        context.go('/home');
-      } else if (authState.error != null && mounted) {
+      if (authState.isAuthenticated) {
+        final msg = authState.successMessage ?? 'Autenticación exitosa';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authState.error!)),
+          SnackBar(
+            content: Text(msg),
+            backgroundColor: Colors.green,
+          ),
+        );
+        context.go('/home');
+      } else if (authState.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authState.error!),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }

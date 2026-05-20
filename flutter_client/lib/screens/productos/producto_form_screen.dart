@@ -75,7 +75,10 @@ class _ProductoFormScreenState extends ConsumerState<ProductoFormScreen> {
           
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Producto creado exitosamente')),
+              const SnackBar(
+                content: Text('Producto creado exitosamente'),
+                backgroundColor: Colors.green,
+              ),
             );
           }
         } else {
@@ -89,18 +92,28 @@ class _ProductoFormScreenState extends ConsumerState<ProductoFormScreen> {
           
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Producto actualizado exitosamente')),
+              const SnackBar(
+                content: Text('Producto actualizado exitosamente'),
+                backgroundColor: Colors.green,
+              ),
             );
           }
         }
         
         if (mounted) {
-          context.pop(); // Volver a la pantalla anterior
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          } else {
+            context.go('/home');
+          }
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e')),
+            SnackBar(
+              content: Text('Error: $e'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
       } finally {
@@ -127,26 +140,17 @@ class _ProductoFormScreenState extends ConsumerState<ProductoFormScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(titulo),
-        // ✅ Botón de retroceso automático (flecha izquierda)
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
-            context.pop(); // Volver sin guardar
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              context.go('/home');
+            }
           },
           tooltip: 'Volver',
         ),
-        actions: [
-          // ✅ Botón de cancelar en la parte derecha
-          TextButton(
-            onPressed: () {
-              context.pop(); // Volver sin guardar
-            },
-            child: const Text(
-              'Cancelar',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
       ),
       body: _isLoading
           ? const LoadingWidget()
@@ -228,30 +232,15 @@ class _ProductoFormScreenState extends ConsumerState<ProductoFormScreen> {
                     ),
                     const SizedBox(height: 32),
                     
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () {
-                              context.pop(); // Cancelar
-                            },
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                            ),
-                            child: const Text('Cancelar'),
-                          ),
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        onPressed: _guardar,
+                        style: ElevatedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(vertical: 16),
                         ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: _guardar,
-                            style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                            ),
-                            child: Text(widget.productoId == null ? 'Crear' : 'Actualizar'),
-                          ),
-                        ),
-                      ],
+                        child: Text(widget.productoId == null ? 'Crear' : 'Actualizar'),
+                      ),
                     ),
                   ],
                 ),

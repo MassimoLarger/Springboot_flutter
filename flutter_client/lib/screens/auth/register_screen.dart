@@ -44,12 +44,23 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
             : _telefonoController.text,
       );
       
+      if (!mounted) return;
       final authState = ref.read(authStateProvider);
-      if (authState.isAuthenticated && mounted) {
-        context.go('/home');
-      } else if (authState.error != null && mounted) {
+      if (authState.isAuthenticated) {
+        final msg = authState.successMessage ?? 'Registro exitoso';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(authState.error!)),
+          SnackBar(
+            content: Text(msg),
+            backgroundColor: Colors.green,
+          ),
+        );
+        context.go('/home');
+      } else if (authState.error != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(authState.error!),
+            backgroundColor: Colors.red,
+          ),
         );
       }
     }
@@ -64,7 +75,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         title: const Text('Registro'),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => context.go('/login'),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              context.go('/login');
+            }
+          },
         ),
       ),
       body: SafeArea(

@@ -13,12 +13,14 @@ class AuthState {
   final bool isLoading;
   final AuthResponse? user;
   final String? error;
+  final String? successMessage;
   final bool isAuthenticated;
 
   AuthState({
     this.isLoading = false,
     this.user,
     this.error,
+    this.successMessage,
     this.isAuthenticated = false,
   });
 
@@ -26,12 +28,14 @@ class AuthState {
     bool? isLoading,
     AuthResponse? user,
     String? error,
+    String? successMessage,
     bool? isAuthenticated,
   }) {
     return AuthState(
       isLoading: isLoading ?? this.isLoading,
       user: user ?? this.user,
       error: error ?? this.error,
+      successMessage: successMessage ?? this.successMessage,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
     );
   }
@@ -43,7 +47,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   AuthNotifier(this._authRepository) : super(AuthState());
 
   Future<void> login(String email, String password) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, error: null, successMessage: null);
     
     try {
       final user = await _authRepository.login(email, password);
@@ -51,11 +55,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isLoading: false,
         user: user,
         isAuthenticated: true,
+        successMessage: '¡Bienvenido de nuevo, ${user.nombre}!',
       );
     } on DioException catch (e) {
+      final errorMessage = _getErrorMessage(e);
       state = state.copyWith(
         isLoading: false,
-        error: _getErrorMessage(e),
+        error: errorMessage,
       );
     } catch (e) {
       state = state.copyWith(
@@ -72,7 +78,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String confirmPassword,
     String? telefono,
   }) async {
-    state = state.copyWith(isLoading: true, error: null);
+    state = state.copyWith(isLoading: true, error: null, successMessage: null);
     
     try {
       final user = await _authRepository.register(
@@ -86,11 +92,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
         isLoading: false,
         user: user,
         isAuthenticated: true,
+        successMessage: 'Cuenta creada exitosamente. ¡Bienvenido!',
       );
     } on DioException catch (e) {
+      final errorMessage = _getErrorMessage(e);
       state = state.copyWith(
         isLoading: false,
-        error: _getErrorMessage(e),
+        error: errorMessage,
       );
     } catch (e) {
       state = state.copyWith(
@@ -101,11 +109,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   String _getErrorMessage(DioException e) {
-    final data = e.response?.data;
-    if (data is Map && data['message'] != null) {
-      return data['message'].toString();
+    if (e.response?.data != null && e.response?.data is Map) {
+      final data = e.response!.data;
+      if (data['message'] != null) {
+        return data['message'];
+      }
+      return 'Error en el servidor (${e.response?.statusCode})';
     }
-
+    
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
         return 'Tiempo de conexión agotado. Verifica tu internet.';

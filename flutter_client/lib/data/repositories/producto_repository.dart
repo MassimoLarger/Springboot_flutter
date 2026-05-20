@@ -17,14 +17,42 @@ class ProductoRepository {
         direction: direction,
       );
       
-      // La respuesta de la API viene envuelta en ApiResponse
-      final apiResponse = response.data;
-      final paginatedData = apiResponse['data'];
+      final dynamic apiResponse = response.data;
       
-      return PaginatedResponse<Producto>.fromJson(
-        paginatedData,
-        (json) => Producto.fromJson(json as Map<String, dynamic>),
-      );
+      if (apiResponse is Map<String, dynamic>) {
+        // Caso normal: PaginatedResponse o ApiResponse<PaginatedResponse>
+        if (apiResponse.containsKey('pagination')) {
+          return PaginatedResponse<Producto>.fromJson(
+            apiResponse,
+            (json) => Producto.fromJson(json as Map<String, dynamic>),
+          );
+        } else if (apiResponse.containsKey('data') && apiResponse['data'] is Map) {
+          return PaginatedResponse<Producto>.fromJson(
+            apiResponse['data'],
+            (json) => Producto.fromJson(json as Map<String, dynamic>),
+          );
+        }
+      } else if (apiResponse is List) {
+        // Si por alguna razón el backend devuelve una lista plana
+        return PaginatedResponse<Producto>(
+          success: true,
+          data: apiResponse.map((j) => Producto.fromJson(j as Map<String, dynamic>)).toList(),
+          message: 'Productos obtenidos',
+          pagination: PaginationInfo(
+            currentPage: 0,
+            pageSize: apiResponse.length,
+            totalElements: apiResponse.length,
+            totalPages: 1,
+            isFirst: true,
+            isLast: true,
+            hasNext: false,
+            hasPrevious: false,
+          ),
+          timestamp: DateTime.now(),
+        );
+      }
+      
+      throw Exception('Formato de respuesta inesperado: $apiResponse');
     } catch (e) {
       rethrow;
     }
@@ -42,13 +70,23 @@ class ProductoRepository {
         size: size,
       );
       
-      final apiResponse = response.data;
-      final paginatedData = apiResponse['data'];
+      final dynamic apiResponse = response.data;
       
-      return PaginatedResponse<Producto>.fromJson(
-        paginatedData,
-        (json) => Producto.fromJson(json as Map<String, dynamic>),
-      );
+      if (apiResponse is Map<String, dynamic>) {
+        if (apiResponse.containsKey('pagination')) {
+          return PaginatedResponse<Producto>.fromJson(
+            apiResponse,
+            (json) => Producto.fromJson(json as Map<String, dynamic>),
+          );
+        } else if (apiResponse.containsKey('data') && apiResponse['data'] is Map) {
+          return PaginatedResponse<Producto>.fromJson(
+            apiResponse['data'],
+            (json) => Producto.fromJson(json as Map<String, dynamic>),
+          );
+        }
+      }
+      
+      throw Exception('Formato de respuesta inesperado: $apiResponse');
     } catch (e) {
       rethrow;
     }

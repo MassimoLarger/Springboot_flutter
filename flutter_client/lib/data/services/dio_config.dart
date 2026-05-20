@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class DioConfig {
   static const String baseUrl = 'http://localhost:8080';
@@ -30,15 +30,14 @@ class DioConfig {
 }
 
 class AuthInterceptor extends Interceptor {
-  Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
+  final FlutterSecureStorage _storage = const FlutterSecureStorage();
   
   @override
   Future<void> onRequest(
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final prefs = await _prefs;
-    final token = prefs.getString('access_token');
+    final token = await _storage.read(key: 'access_token');
     
     if (token != null && token.isNotEmpty) {
       options.headers['Authorization'] = 'Bearer $token';
@@ -52,16 +51,9 @@ class AuthInterceptor extends Interceptor {
     DioException err,
     ErrorInterceptorHandler handler,
   ) async {
-    final requestPath = err.requestOptions.path;
     if (err.response?.statusCode == 401) {
-      if (requestPath.contains('/auth/login') ||
-          requestPath.contains('/auth/register') ||
-          requestPath.contains('/auth/refresh')) {
-        return handler.next(err);
-      }
-
-      final prefs = await _prefs;
-      final refreshToken = prefs.getString('refresh_token');
+      // Token expirado - intentar refrescar
+      final refreshToken = await _storage.read(key: 'refresh_token');
       
       if (refreshToken != null) {
         try {
@@ -75,9 +67,10 @@ class AuthInterceptor extends Interceptor {
             final newToken = response.data['data']['accessToken'];
             final newRefreshToken = response.data['data']['refreshToken'];
             
-            await prefs.setString('access_token', newToken);
-            await prefs.setString('refresh_token', newRefreshToken);
+            await _storage.write(key: 'access_token', value: newToken);
+            await _storage.write(key: 'refresh_token', value: newRefreshToken);
             
+            // Reintentar petición original
             final newOptions = err.requestOptions;
             newOptions.headers['Authorization'] = 'Bearer $newToken';
             
@@ -85,11 +78,8 @@ class AuthInterceptor extends Interceptor {
             return handler.resolve(retryResponse);
           }
         } catch (e) {
-          await prefs.remove('access_token');
-          await prefs.remove('refresh_token');
-          await prefs.remove('user_email');
-          await prefs.remove('user_name');
-          await prefs.remove('user_id');
+          // Refresh falló - limpiar y redirigir a login
+          await _storage.deleteAll();
         }
       }
     }

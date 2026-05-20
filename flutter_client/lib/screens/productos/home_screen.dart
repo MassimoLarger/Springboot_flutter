@@ -52,6 +52,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<ProductosState>(productosProvider, (prev, next) {
+      if (!mounted) return;
+      final newError = next.error;
+      if (newError != null && newError != prev?.error) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(newError),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    });
+
     final productosState = ref.watch(productosProvider);
 
     return Scaffold(
@@ -104,7 +117,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: _buildBody(productosState),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          context.go('/producto/nuevo');
+          context.push('/producto/nuevo');
         },
         child: const Icon(Icons.add),
       ),

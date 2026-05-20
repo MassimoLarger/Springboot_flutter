@@ -73,14 +73,24 @@ class _ProductoDetailScreenState extends ConsumerState<ProductoDetailScreen> {
         await ref.read(productosProvider.notifier).deleteProducto(widget.productoId);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Producto eliminado exitosamente')),
+            const SnackBar(
+              content: Text('Producto eliminado exitosamente'),
+              backgroundColor: Colors.green,
+            ),
           );
-          context.pop();
+          if (Navigator.of(context).canPop()) {
+            Navigator.of(context).pop();
+          } else {
+            context.go('/home');
+          }
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error: $e')),
+            SnackBar(
+              content: Text('Error: $e'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
         setState(() => _isLoading = false);
@@ -92,12 +102,22 @@ class _ProductoDetailScreenState extends ConsumerState<ProductoDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            } else {
+              context.go('/home');
+            }
+          },
+        ),
         title: const Text('Detalle del Producto'),
         actions: [
           IconButton(
             icon: const Icon(Icons.edit),
             onPressed: () {
-              context.go('/producto/editar/${widget.productoId}');
+              context.push('/producto/editar/${widget.productoId}');
             },
           ),
           IconButton(
