@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_client/data/providers/producto_provider.dart';
-import 'package:flutter_client/models/producto.dart';
 import 'package:flutter_client/widgets/loading_widget.dart';
 import 'package:go_router/go_router.dart';
 
@@ -22,7 +21,6 @@ class _ProductoFormScreenState extends ConsumerState<ProductoFormScreen> {
   final _stockController = TextEditingController();
   
   bool _isLoading = false;
-  Producto? _productoExistente;
 
   @override
   void initState() {
@@ -39,7 +37,6 @@ class _ProductoFormScreenState extends ConsumerState<ProductoFormScreen> {
       final repository = ref.read(productoRepositoryProvider);
       final producto = await repository.getProducto(widget.productoId!);
       
-      _productoExistente = producto;
       _nombreController.text = producto.nombre;
       _descripcionController.text = producto.descripcion ?? '';
       _precioController.text = producto.precio.toString();
@@ -196,7 +193,7 @@ class _ProductoFormScreenState extends ConsumerState<ProductoFormScreen> {
                         border: OutlineInputBorder(),
                         prefixIcon: Icon(Icons.attach_money),
                       ),
-                      keyboardType: TextInputType.numberWithOptions(decimal: true),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'El precio es requerido';

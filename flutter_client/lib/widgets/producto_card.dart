@@ -28,7 +28,7 @@ class ProductoCard extends StatelessWidget {
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withOpacity(0.1),
+                  color: Theme.of(context).primaryColor.withAlpha(26),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(Icons.inventory_2, size: 32),

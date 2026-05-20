@@ -45,9 +45,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _goToRegister() {
-    print("Navegando a registro..."); // Para debug
-    context.push('/register'); // Usar push en lugar de go
-    // O también: context.go('/register');
+    context.push('/register');
   }
 
   @override

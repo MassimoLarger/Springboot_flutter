@@ -45,7 +45,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       );
       
       final authState = ref.read(authStateProvider);
-      if (authState.isAuthenticated && !mounted) {
+      if (authState.isAuthenticated && mounted) {
         context.go('/home');
       } else if (authState.error != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

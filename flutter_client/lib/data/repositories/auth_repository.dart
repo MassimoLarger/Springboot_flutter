@@ -1,9 +1,9 @@
 import 'package:flutter_client/data/services/api_client.dart';
 import 'package:flutter_client/models/auth_response.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class AuthRepository {
-  final FlutterSecureStorage _storage = const FlutterSecureStorage();
+  Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
   
   Future<AuthResponse> login(String email, String password) async {
     try {
@@ -15,12 +15,12 @@ class AuthRepository {
       final data = response.data['data'];
       final authResponse = AuthResponse.fromJson(data);
       
-      // Guardar tokens
-      await _storage.write(key: 'access_token', value: authResponse.token);
-      await _storage.write(key: 'refresh_token', value: authResponse.refreshToken);
-      await _storage.write(key: 'user_email', value: authResponse.email);
-      await _storage.write(key: 'user_name', value: authResponse.nombre);
-      await _storage.write(key: 'user_id', value: authResponse.usuarioId.toString());
+      final prefs = await _prefs;
+      await prefs.setString('access_token', authResponse.token);
+      await prefs.setString('refresh_token', authResponse.refreshToken);
+      await prefs.setString('user_email', authResponse.email);
+      await prefs.setString('user_name', authResponse.nombre);
+      await prefs.setString('user_id', authResponse.usuarioId.toString());
       
       return authResponse;
     } catch (e) {
@@ -47,12 +47,12 @@ class AuthRepository {
       final data = response.data['data'];
       final authResponse = AuthResponse.fromJson(data);
       
-      // Guardar tokens
-      await _storage.write(key: 'access_token', value: authResponse.token);
-      await _storage.write(key: 'refresh_token', value: authResponse.refreshToken);
-      await _storage.write(key: 'user_email', value: authResponse.email);
-      await _storage.write(key: 'user_name', value: authResponse.nombre);
-      await _storage.write(key: 'user_id', value: authResponse.usuarioId.toString());
+      final prefs = await _prefs;
+      await prefs.setString('access_token', authResponse.token);
+      await prefs.setString('refresh_token', authResponse.refreshToken);
+      await prefs.setString('user_email', authResponse.email);
+      await prefs.setString('user_name', authResponse.nombre);
+      await prefs.setString('user_id', authResponse.usuarioId.toString());
       
       return authResponse;
     } catch (e) {
@@ -62,25 +62,39 @@ class AuthRepository {
   
   Future<void> logout() async {
     try {
-      final refreshToken = await _storage.read(key: 'refresh_token');
+      final prefs = await _prefs;
+      final refreshToken = prefs.getString('refresh_token');
       if (refreshToken != null) {
         await ApiClient.logout({'refreshToken': refreshToken});
       }
     } finally {
-      await _storage.deleteAll();
+      final prefs = await _prefs;
+      await prefs.remove('access_token');
+      await prefs.remove('refresh_token');
+      await prefs.remove('user_email');
+      await prefs.remove('user_name');
+      await prefs.remove('user_id');
     }
   }
   
   Future<bool> isAuthenticated() async {
-    final token = await _storage.read(key: 'access_token');
+    final prefs = await _prefs;
+    final token = prefs.getString('access_token');
     return token != null && token.isNotEmpty;
   }
   
   Future<String?> getUserName() async {
-    return await _storage.read(key: 'user_name');
+    final prefs = await _prefs;
+    return prefs.getString('user_name');
   }
   
   Future<String?> getUserEmail() async {
-    return await _storage.read(key: 'user_email');
+    final prefs = await _prefs;
+    return prefs.getString('user_email');
+  }
+
+  Future<String?> getUserId() async {
+    final prefs = await _prefs;
+    return prefs.getString('user_id');
   }
 }

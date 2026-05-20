@@ -54,6 +54,8 @@ class ProductosNotifier extends StateNotifier<ProductosState> {
   ProductosNotifier(this._productoRepository) : super(ProductosState());
 
   Future<void> loadProductos({bool refresh = false}) async {
+    await Future.microtask(() {});
+
     if (refresh) {
       state = state.copyWith(isLoading: true, productos: [], currentPage: 0);
     } else if (state.currentPage == 0) {
@@ -106,6 +108,36 @@ class ProductosNotifier extends StateNotifier<ProductosState> {
     } catch (e) {
       state = state.copyWith(
         isLoadingMore: false,
+        error: e.toString(),
+      );
+    }
+  }
+
+  Future<void> buscarProductos(String nombre) async {
+    if (nombre.isEmpty) {
+      await loadProductos(refresh: true);
+      return;
+    }
+
+    state = state.copyWith(isLoading: true, productos: [], currentPage: 0, error: null);
+
+    try {
+      final result = await _productoRepository.buscarProductos(
+        nombre: nombre,
+        page: 0,
+        size: 20,
+      );
+
+      state = state.copyWith(
+        productos: result.data,
+        isLoading: false,
+        currentPage: result.pagination.currentPage + 1,
+        totalPages: result.pagination.totalPages,
+        hasNext: result.pagination.hasNext,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        isLoading: false,
         error: e.toString(),
       );
     }

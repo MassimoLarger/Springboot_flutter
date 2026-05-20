@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_client/data/repositories/auth_repository.dart';
 import 'package:flutter_client/models/auth_response.dart';
@@ -51,10 +52,15 @@ class AuthNotifier extends StateNotifier<AuthState> {
         user: user,
         isAuthenticated: true,
       );
+    } on DioException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _getErrorMessage(e),
+      );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: 'Error inesperado: $e',
       );
     }
   }
@@ -81,11 +87,34 @@ class AuthNotifier extends StateNotifier<AuthState> {
         user: user,
         isAuthenticated: true,
       );
+    } on DioException catch (e) {
+      state = state.copyWith(
+        isLoading: false,
+        error: _getErrorMessage(e),
+      );
     } catch (e) {
       state = state.copyWith(
         isLoading: false,
-        error: e.toString(),
+        error: 'Error inesperado: $e',
       );
+    }
+  }
+
+  String _getErrorMessage(DioException e) {
+    final data = e.response?.data;
+    if (data is Map && data['message'] != null) {
+      return data['message'].toString();
+    }
+
+    switch (e.type) {
+      case DioExceptionType.connectionTimeout:
+        return 'Tiempo de conexión agotado. Verifica tu internet.';
+      case DioExceptionType.receiveTimeout:
+        return 'El servidor tarda mucho en responder.';
+      case DioExceptionType.badResponse:
+        return 'Error del servidor (${e.response?.statusCode}): ${e.response?.statusMessage}';
+      default:
+        return 'Error de red: No se pudo conectar con el servidor.';
     }
   }
 
@@ -99,13 +128,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
     if (isAuthenticated) {
       final userName = await _authRepository.getUserName();
       final userEmail = await _authRepository.getUserEmail();
+      final userIdStr = await _authRepository.getUserId();
       
       // Simular usuario desde datos guardados
       final user = AuthResponse(
         token: '',
         refreshToken: '',
         type: 'Bearer',
-        usuarioId: 0,
+        usuarioId: int.tryParse(userIdStr ?? '0') ?? 0,
         email: userEmail ?? '',
         nombre: userName ?? '',
         mensaje: '',

@@ -167,7 +167,7 @@ class _ProductoDetailScreenState extends ConsumerState<ProductoDetailScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              color: Theme.of(context).primaryColor.withAlpha(26),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(

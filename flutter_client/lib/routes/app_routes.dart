@@ -13,7 +13,6 @@ class AppRoutes {
     initialLocation: '/splash',
     redirect: (context, state) async {
       final container = ProviderScope.containerOf(context);
-      final authState = container.read(authStateProvider);
       
       // Esperar un momento para que se cargue el estado
       await Future.delayed(const Duration(milliseconds: 100));

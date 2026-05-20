@@ -53,7 +53,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final productosState = ref.watch(productosProvider);
-    final authState = ref.watch(authStateProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -66,7 +65,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   border: InputBorder.none,
                 ),
                 onSubmitted: (value) {
-                  // Implementar búsqueda
+                  ref.read(productosProvider.notifier).buscarProductos(value.trim());
                 },
               )
             : const Text('Mis Productos'),
