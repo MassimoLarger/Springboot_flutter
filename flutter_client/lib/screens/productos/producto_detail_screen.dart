@@ -131,6 +131,7 @@ class _ProductoDetailScreenState extends ConsumerState<ProductoDetailScreen> {
   }
 
   Widget _buildBody() {
+    final colorScheme = Theme.of(context).colorScheme;
     if (_isLoading) {
       return const Center(child: LoadingWidget());
     }
@@ -162,32 +163,34 @@ class _ProductoDetailScreenState extends ConsumerState<ProductoDetailScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Estado
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: _producto!.activo ? Colors.green : Colors.red,
+              color: _producto!.activo
+                  ? colorScheme.primary.withAlpha(26)
+                  : colorScheme.error.withAlpha(26),
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
               _producto!.activo ? 'Activo' : 'Inactivo',
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(
+                color: _producto!.activo ? colorScheme.primary : colorScheme.error,
+                fontWeight: FontWeight.w700,
+              ),
             ),
           ),
           const SizedBox(height: 16),
           
-          // Nombre
           Text(
             _producto!.nombre,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           
-          // Precio
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor.withAlpha(26),
+              color: colorScheme.primary.withAlpha(26),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Text(
@@ -195,13 +198,12 @@ class _ProductoDetailScreenState extends ConsumerState<ProductoDetailScreen> {
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Theme.of(context).primaryColor,
+                color: colorScheme.primary,
               ),
             ),
           ),
           const SizedBox(height: 16),
           
-          // Descripción
           if (_producto!.descripcion != null) ...[
             const Text(
               'Descripción',
@@ -215,7 +217,6 @@ class _ProductoDetailScreenState extends ConsumerState<ProductoDetailScreen> {
             const SizedBox(height: 16),
           ],
           
-          // Información adicional
           const Text(
             'Información adicional',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -241,11 +242,12 @@ class _ProductoDetailScreenState extends ConsumerState<ProductoDetailScreen> {
   }
 
   Widget _buildInfoRow(IconData icon, String label, String value) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: Colors.grey),
+          Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
           const SizedBox(width: 12),
           Text(
             '$label:',
@@ -256,7 +258,7 @@ class _ProductoDetailScreenState extends ConsumerState<ProductoDetailScreen> {
             child: Text(
               value,
               textAlign: TextAlign.end,
-              style: const TextStyle(color: Colors.grey),
+              style: TextStyle(color: colorScheme.onSurfaceVariant),
             ),
           ),
         ],

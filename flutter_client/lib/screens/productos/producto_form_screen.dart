@@ -164,8 +164,7 @@ class _ProductoFormScreenState extends ConsumerState<ProductoFormScreen> {
                       controller: _nombreController,
                       decoration: const InputDecoration(
                         labelText: 'Nombre del producto',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.production_quantity_limits),
+                        prefixIcon: Icon(Icons.sell_outlined),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
@@ -183,8 +182,7 @@ class _ProductoFormScreenState extends ConsumerState<ProductoFormScreen> {
                       controller: _descripcionController,
                       decoration: const InputDecoration(
                         labelText: 'Descripción (opcional)',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.description),
+                        prefixIcon: Icon(Icons.description_outlined),
                       ),
                       maxLines: 3,
                     ),
@@ -194,8 +192,7 @@ class _ProductoFormScreenState extends ConsumerState<ProductoFormScreen> {
                       controller: _precioController,
                       decoration: const InputDecoration(
                         labelText: 'Precio',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.attach_money),
+                        prefixIcon: Icon(Icons.payments_outlined),
                       ),
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       validator: (value) {
@@ -215,8 +212,7 @@ class _ProductoFormScreenState extends ConsumerState<ProductoFormScreen> {
                       controller: _stockController,
                       decoration: const InputDecoration(
                         labelText: 'Stock',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.inventory),
+                        prefixIcon: Icon(Icons.inventory_2_outlined),
                       ),
                       keyboardType: TextInputType.number,
                       validator: (value) {
@@ -236,9 +232,6 @@ class _ProductoFormScreenState extends ConsumerState<ProductoFormScreen> {
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _guardar,
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
-                        ),
                         child: Text(widget.productoId == null ? 'Crear' : 'Actualizar'),
                       ),
                     ),

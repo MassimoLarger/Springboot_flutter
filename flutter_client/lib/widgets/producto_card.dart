@@ -12,40 +12,44 @@ class ProductoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final stockOk = producto.stock > 0;
+    final stockColor = stockOk ? colorScheme.secondary : colorScheme.error;
+    final statusBg =
+        producto.activo ? colorScheme.primary.withAlpha(26) : colorScheme.error.withAlpha(26);
+    final statusFg = producto.activo ? colorScheme.primary : colorScheme.error;
+
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(
         onTap: () {
           context.push('/producto/${producto.id}');
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(16),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
             children: [
-              // Icono
               Container(
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor.withAlpha(26),
-                  borderRadius: BorderRadius.circular(12),
+                  color: colorScheme.primary.withAlpha(20),
+                  borderRadius: BorderRadius.circular(16),
                 ),
-                child: const Icon(Icons.inventory_2, size: 32),
+                child: Icon(Icons.inventory_2_outlined, size: 32, color: colorScheme.primary),
               ),
               const SizedBox(width: 16),
               
-              // Información
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       producto.nombre,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -53,10 +57,10 @@ class ProductoCard extends StatelessWidget {
                     if (producto.descripcion != null)
                       Text(
                         producto.descripcion!,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodyMedium
+                            ?.copyWith(color: colorScheme.onSurfaceVariant),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -65,24 +69,24 @@ class ProductoCard extends StatelessWidget {
                       children: [
                         Text(
                           producto.precioFormateado,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Theme.of(context).primaryColor,
-                          ),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                color: colorScheme.primary,
+                              ),
                         ),
                         const SizedBox(width: 16),
                         Icon(
                           Icons.inventory,
                           size: 16,
-                          color: producto.stock > 0 ? Colors.green : Colors.red,
+                          color: stockColor,
                         ),
                         const SizedBox(width: 4),
                         Text(
                           'Stock: ${producto.stock}',
                           style: TextStyle(
                             fontSize: 14,
-                            color: producto.stock > 0 ? Colors.green : Colors.red,
+                            fontWeight: FontWeight.w600,
+                            color: stockColor,
                           ),
                         ),
                       ],
@@ -91,19 +95,15 @@ class ProductoCard extends StatelessWidget {
                 ),
               ),
               
-              // Estado
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: producto.activo ? Colors.green : Colors.red,
+                  color: statusBg,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   producto.activo ? 'Activo' : 'Inactivo',
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 12,
-                  ),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: statusFg),
                 ),
               ),
             ],

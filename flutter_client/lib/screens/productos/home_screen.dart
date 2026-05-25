@@ -57,15 +57,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       final newError = next.error;
       if (newError != null && newError != prev?.error) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(newError),
-            backgroundColor: Colors.red,
-          ),
+          SnackBar(content: Text(newError)),
         );
       }
     });
 
     final productosState = ref.watch(productosProvider);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -73,13 +71,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ? TextField(
                 controller: _searchController,
                 autofocus: true,
-                decoration: const InputDecoration(
+                textInputAction: TextInputAction.search,
+                decoration: InputDecoration(
                   hintText: 'Buscar productos...',
-                  border: InputBorder.none,
+                  filled: true,
+                  fillColor: colorScheme.surfaceContainerHighest,
+                  prefixIcon: const Icon(Icons.search),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(horizontal: 12),
                 ),
-                onSubmitted: (value) {
-                  ref.read(productosProvider.notifier).buscarProductos(value.trim());
-                },
+                onSubmitted: (value) => ref
+                    .read(productosProvider.notifier)
+                    .buscarProductos(value.trim()),
               )
             : const Text('Mis Productos'),
         actions: [
@@ -119,7 +129,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onPressed: () {
           context.push('/producto/nuevo');
         },
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add_rounded),
       ),
     );
   }
@@ -130,11 +140,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     if (state.error != null && state.productos.isEmpty) {
+      final colorScheme = Theme.of(context).colorScheme;
       return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            Icon(Icons.error_outline, size: 64, color: colorScheme.error),
             const SizedBox(height: 16),
             Text(state.error!),
             const SizedBox(height: 16),
@@ -148,15 +159,34 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
 
     if (state.productos.isEmpty) {
-      return const Center(
+      final colorScheme = Theme.of(context).colorScheme;
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.inventory_2_outlined, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text('No hay productos'),
-            SizedBox(height: 8),
-            Text('Presiona + para agregar'),
+            Container(
+              width: 84,
+              height: 84,
+              decoration: BoxDecoration(
+                color: colorScheme.primary.withAlpha(26),
+                borderRadius: BorderRadius.circular(22),
+              ),
+              child: Icon(
+                Icons.inventory_2_outlined,
+                size: 40,
+                color: colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No hay productos',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: 6),
+            Text(
+              'Presiona + para agregar',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
           ],
         ),
       );

@@ -8,6 +8,45 @@ Este documento describe lo implementado en el cliente Flutter para consumir la A
 - Capa de datos (modelos, repositorios, cliente HTTP con interceptor JWT + refresh).
 - Pantallas CRUD (auth + productos) con validaciones y manejo de estados.
 
+## Diseño visual (UI/UX)
+La app utiliza Material 3 y un esquema de color derivado de un color semilla (seed) para mantener consistencia visual. La configuración del tema se centraliza en [main.dart](flutter_client/lib/main.dart).
+
+### Tema global
+- Material 3: `useMaterial3: true`.
+- Esquema de color: `ColorScheme.fromSeed` con `seedColor = 0xFF00BCD4` (genera paleta basada en cian/turquesa).
+- Fondo general: `scaffoldBackgroundColor: 0xFFF6FBFF` (tono claro).
+- AppBar:
+  - Fondo: `surface`
+  - Texto/iconos: `onSurface`
+  - Título centrado y elevación mínima.
+- SnackBars:
+  - Estilo flotante (`SnackBarBehavior.floating`) con borde redondeado.
+  - En acciones clave se usan colores explícitos:
+    - Éxito: `backgroundColor: Colors.green`
+    - Error: `backgroundColor: Colors.red`
+- Cards:
+  - Radio 16, sin elevación, con margen consistente.
+- Inputs:
+  - Estilo “filled” con bordes redondeados (14) y borde de foco en color primario.
+- Botones:
+  - `ElevatedButton`/`OutlinedButton` con radio 14, padding uniforme y tipografía semibold.
+- FloatingActionButton:
+  - Fondo en color primario, texto/iconos en `onPrimary`.
+
+### Pantallas y componentes
+Estas pantallas aplican un patrón visual consistente basado en `ColorScheme`:
+- Splash: fondo con degradado (primario con alpha → surface) y card central con icono y loader ([splash_screen.dart](flutter/flutter_client/lib/screens/splash_screen.dart)).
+- Login / Registro: fondo con degradado, card central con icono (store/person_add), inputs filled y botón principal a ancho completo ([login_screen.dart](/flutter/flutter_client/lib/screens/auth/login_screen.dart), [register_screen.dart](flutter/flutter_client/lib/screens/auth/register_screen.dart)).
+- Listado de productos:
+  - Cards con ícono en contenedor redondeado y color primario con alpha.
+  - Indicador de stock: usa `secondary` si hay stock y `error` si stock = 0.
+  - Badge de estado “Activo/Inactivo” con color primario/error y fondo con alpha ([producto_card.dart](flutter/flutter_client/lib/widgets/producto_card.dart)).
+- Detalle del producto:
+  - Badge “Activo/Inactivo” (primario/error).
+  - Precio destacado en contenedor con fondo primario con alpha.
+  - Card de “Información adicional” con filas e íconos.
+  - Eliminación con confirmación (AlertDialog) y acción destacada en rojo ([producto_detail_screen.dart](flutter/flutter_client/lib/screens/productos/producto_detail_screen.dart)).
+
 ## Fase 6 — Desarrollo del cliente Flutter
 
 ### 6.1 Inicialización del proyecto Flutter
